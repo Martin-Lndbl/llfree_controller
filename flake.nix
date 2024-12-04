@@ -86,6 +86,7 @@
           );
 
           linuxPackages_llfree = pkgs.linuxPackages_llfree;
+          llfree_linux-alloc-bench = pkgs.llfree_linux-alloc-bench;
         };
 
         devShells = {

@@ -1,6 +1,7 @@
 { inputs, ... }:
 
 final: _prev: rec {
-  linux_llfree = _prev.callPackage ./pkgs/llfree-kernel.nix { };
-  linuxPackages_llfree = _prev.recurseIntoAttrs (_prev.linuxPackagesFor linux_llfree);
+  llfree_linux = _prev.callPackage ./pkgs/llfree_kernel.nix { };
+  linuxPackages_llfree = _prev.recurseIntoAttrs (_prev.linuxPackagesFor llfree_linux);
+  llfree_linux-alloc-bench = _prev.callPackage ./pkgs/llfree_linux-alloc-bench.nix { };
 }

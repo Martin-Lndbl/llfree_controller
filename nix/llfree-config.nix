@@ -86,49 +86,9 @@ rec {
     "hugepagesz=2MB"
     "hugepages=1000"
   ];
-
-  # boot.extraModulePackages = [
-  #   (
-  #     let
-  #       llfree-linux-alloc-bench =
-  #         {
-  #           llvmPackages_16,
-  #           fetchFromGitHub,
-  #           ...
-  #         }:
-  #         let
-  #           # kernel = boot.kernelPackages.kernel;
-  #           kernel = pkgs.linuxPackages.kernel;
-  #         in
-  #         llvmPackages_16.stdenv.mkDerivation rec {
-  #           pname = "linux-alloc-bench";
-  #           version = "bd682985584908587c34b5ce73e4b5340e4cca69";
-  #
-  #           src = fetchFromGitHub {
-  #             owner = "luhsra";
-  #             repo = pname;
-  #             rev = version;
-  #             hash = "sha256-VCqkaP6P9xv5PvUKZWLjUmhsRDI1eLSBZoA1W0S5Srw=";
-  #           };
-  #
-  #           hardeningDisable = [
-  #             "pic"
-  #             "format"
-  #           ];
-  #
-  #           makeFlags = [
-  #             "KERNELRELEASE=${kernel.modDirVersion}"
-  #             "KERNEL_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
-  #             "INSTALL_MOD_PATH=$(out)"
-  #           ];
-  #
-  #           nativeBuildInputs = kernel.moduleBuildDependencies;
-  #         };
-  #     in
-  #     pkgs.callPackage llfree-linux-alloc-bench { }
-  #   )
-  # ];
-
+  boot.extraModulePackages = [ 
+    flakepkgs.llfree_linux-alloc-bench
+  ];
   system.stateVersion = "24.05";
 
   console.enable = true;
