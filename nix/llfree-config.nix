@@ -75,14 +75,19 @@
   boot.kernelPackages =
     let
       llfree-linux-pkg =
-        { fetchFromGitHub, buildLinux, ... }@args:
+        {
+          fetchFromGitHub,
+          buildLinux,
+          llvmPackages_16,
+          ...
+        }@args:
 
         buildLinux (
           args
           // rec {
             version = "6.1";
 
-            stdenv = pkgs.llvmPackages_latest.stdenv;
+            stdenv = llvmPackages_16.stdenv;
 
             src = fetchFromGitHub {
               owner = "luhsra";
@@ -92,8 +97,17 @@
             };
 
             extraMakeFlags = [
-              "O=build-llfree-vm"
+              # This overrides O="$buildRoot" https://github.com/NixOS/nixpkgs/blob/6f9368f591c653b91c4371e6a9e0e40ef4871441/pkgs/os-specific/linux/kernel/generic.nix#L181
+              # "O=build-llfree-vm" 
               "LLVM=1"
+              "LD=${llvmPackages_16.bintools-unwrapped}/bin/ld.lld"
+              "AR=${llvmPackages_16.bintools-unwrapped}/bin/llvm-ar"
+              "NM=${llvmPackages_16.bintools-unwrapped}/bin/llvm-nm"
+              "STRIP=${llvmPackages_16.bintools-unwrapped}/bin/llvm-strip"
+              "OBJCOPY=${llvmPackages_16.bintools-unwrapped}/bin/llvm-objcopy"
+              "OBJDUMP=${llvmPackages_16.bintools-unwrapped}/bin/llvm-objdump"
+              "READELF=${llvmPackages_16.bintools-unwrapped}/bin/llvm-readelf"
+              "HOSTAR=${llvmPackages_16.bintools-unwrapped}/bin/llvm-ar"
             ];
 
             extraConfig = ''
@@ -101,8 +115,6 @@
             '';
 
             ignoreConfigErrors = true;
-
-            extraMeta.branch = "6.1";
           }
           // (args.argsOverride or { })
         );
