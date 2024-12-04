@@ -16,7 +16,10 @@
     (flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ (import ./overlays.nix { inherit inputs; }) ];
+        };
         unstable = unstablepkgs.legacyPackages.${system};
         flakepkgs = self.packages.${system};
         buildDeps =
@@ -61,6 +64,13 @@
             format = "qcow2";
           };
 
+          llfree-image = make-disk-image {
+            config = self.nixosConfigurations.llfree.config;
+            inherit (pkgs) lib;
+            inherit pkgs;
+            format = "qcow2";
+          };
+
           linux-firmware-pinned = (
             pkgs.linux-firmware.overrideAttrs (
               old: new: {
@@ -74,6 +84,8 @@
               }
             )
           );
+
+          # llfree-kernel = pkgs.llfree-kernel;
         };
 
         devShells = {
@@ -109,6 +121,18 @@
               ./nix/nixos-generators-qcow.nix
             ];
           };
+          llfree = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            modules = [
+              (import ./nix/llfree-config.nix {
+                inherit pkgs;
+                inherit (pkgs) lib;
+                inherit flakepkgs;
+              })
+              ./nix/nixos-generators-qcow.nix
+            ];
+          };
+
         };
     };
 }
