@@ -85,7 +85,7 @@
             )
           );
 
-          # llfree-kernel = pkgs.llfree-kernel;
+          linuxPackages_llfree = pkgs.linuxPackages_llfree;
         };
 
         devShells = {

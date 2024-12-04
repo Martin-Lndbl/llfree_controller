@@ -5,7 +5,7 @@
   extraEnvPackages ? [ ],
   ...
 }:
-{
+rec {
   networking.hostName = "llfree";
 
   services.sshd.enable = true;
@@ -72,55 +72,7 @@
     ]
     ++ extraEnvPackages;
 
-  boot.kernelPackages =
-    let
-      llfree-linux-pkg =
-        {
-          fetchFromGitHub,
-          buildLinux,
-          llvmPackages_16,
-          ...
-        }@args:
-
-        buildLinux (
-          args
-          // rec {
-            version = "6.1";
-
-            stdenv = llvmPackages_16.stdenv;
-
-            src = fetchFromGitHub {
-              owner = "luhsra";
-              repo = "llfree-linux";
-              rev = "v${version}";
-              hash = "sha256-7HBzP6P/7KLCfKas4TRFfCutG0azFzV+IpQABtDMHnk=";
-            };
-
-            extraMakeFlags = [
-              # This overrides O="$buildRoot" https://github.com/NixOS/nixpkgs/blob/6f9368f591c653b91c4371e6a9e0e40ef4871441/pkgs/os-specific/linux/kernel/generic.nix#L181
-              # "O=build-llfree-vm" 
-              "LLVM=1"
-              "LD=${llvmPackages_16.bintools-unwrapped}/bin/ld.lld"
-              "AR=${llvmPackages_16.bintools-unwrapped}/bin/llvm-ar"
-              "NM=${llvmPackages_16.bintools-unwrapped}/bin/llvm-nm"
-              "STRIP=${llvmPackages_16.bintools-unwrapped}/bin/llvm-strip"
-              "OBJCOPY=${llvmPackages_16.bintools-unwrapped}/bin/llvm-objcopy"
-              "OBJDUMP=${llvmPackages_16.bintools-unwrapped}/bin/llvm-objdump"
-              "READELF=${llvmPackages_16.bintools-unwrapped}/bin/llvm-readelf"
-              "HOSTAR=${llvmPackages_16.bintools-unwrapped}/bin/llvm-ar"
-            ];
-
-            extraConfig = ''
-              INTEL_SGX y
-            '';
-
-            ignoreConfigErrors = true;
-          }
-          // (args.argsOverride or { })
-        );
-      llfree-linux = pkgs.callPackage llfree-linux-pkg { };
-    in
-    pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor llfree-linux);
+  boot.kernelPackages = flakepkgs.linuxPackages_llfree;
 
   boot.kernelModules = [
     "vfio"
@@ -134,6 +86,48 @@
     "hugepagesz=2MB"
     "hugepages=1000"
   ];
+
+  # boot.extraModulePackages = [
+  #   (
+  #     let
+  #       llfree-linux-alloc-bench =
+  #         {
+  #           llvmPackages_16,
+  #           fetchFromGitHub,
+  #           ...
+  #         }:
+  #         let
+  #           # kernel = boot.kernelPackages.kernel;
+  #           kernel = pkgs.linuxPackages.kernel;
+  #         in
+  #         llvmPackages_16.stdenv.mkDerivation rec {
+  #           pname = "linux-alloc-bench";
+  #           version = "bd682985584908587c34b5ce73e4b5340e4cca69";
+  #
+  #           src = fetchFromGitHub {
+  #             owner = "luhsra";
+  #             repo = pname;
+  #             rev = version;
+  #             hash = "sha256-VCqkaP6P9xv5PvUKZWLjUmhsRDI1eLSBZoA1W0S5Srw=";
+  #           };
+  #
+  #           hardeningDisable = [
+  #             "pic"
+  #             "format"
+  #           ];
+  #
+  #           makeFlags = [
+  #             "KERNELRELEASE=${kernel.modDirVersion}"
+  #             "KERNEL_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+  #             "INSTALL_MOD_PATH=$(out)"
+  #           ];
+  #
+  #           nativeBuildInputs = kernel.moduleBuildDependencies;
+  #         };
+  #     in
+  #     pkgs.callPackage llfree-linux-alloc-bench { }
+  #   )
+  # ];
 
   system.stateVersion = "24.05";
 
