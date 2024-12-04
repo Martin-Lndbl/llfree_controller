@@ -86,9 +86,7 @@ rec {
     "hugepagesz=2MB"
     "hugepages=1000"
   ];
-  boot.extraModulePackages = [ 
-    flakepkgs.llfree_linux-alloc-bench
-  ];
+
   system.stateVersion = "24.05";
 
   console.enable = true;

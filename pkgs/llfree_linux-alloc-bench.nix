@@ -2,11 +2,9 @@
   linuxPackages_llfree,
   llvmPackages_16,
   fetchFromGitHub,
+  kernel,
   ...
 }:
-let
-  kernel = linuxPackages_llfree.kernel;
-in
 with llvmPackages_16;
 stdenv.mkDerivation rec {
   pname = "linux-alloc-bench";
@@ -28,7 +26,6 @@ stdenv.mkDerivation rec {
     "KERNELRELEASE=${kernel.modDirVersion}"
     "LINUX_SRC_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/source"
     "LINUX_BUILD_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
-    "INSTALL_MOD_PATH=$(out)"
 
     "LLVM=1"
     "LD=${bintools-unwrapped}/bin/ld.lld"
